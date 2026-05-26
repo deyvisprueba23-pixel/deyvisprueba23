@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eco-Avatar - Guardián del Planeta Pro</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <style>
+    /* --- CONFIGURACIÓN GENERAL --- */
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background: #f0f4f1;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    /* --- CONTENEDOR RESPONSIVO (MÓVIL / PC) --- */
+    #app {
+      width: 100vw;
+      height: 100vh;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    @media (min-width: 768px) {
+      body { padding: 20px; }
+      #app {
+        width: 100%;
+        max-width: 1024px;
+        height: 85vh;
+        max-height: 800px;
+        border-radius: 24px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        border: 1px solid #e2e8f0;
+      }
+    }
+
+    /* --- BARRA SUPERIOR --- */
+    .header-profile {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .user-info { display: flex; align-items: center; gap: 10px; }
+    .avatar-circle { width: 40px; height: 40px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; }
+    .user-name-wrapper { display: flex; align-items: center; gap: 6px; }
+    .user-name { font-size: 14px; font-weight: 700; color: #1e293b; }
+    .edit-name-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px; display: flex; align-items: center; }
+    .edit-name-btn:hover { color: #16a34a; }
+    .eco-points { font-size: 11px; color: #16a34a; font-weight: 600; display: flex; align-items: center; gap: 3px; }
+    .header-actions { display: flex; gap: 15px; color: #64748b; font-size: 20px; }
+
+    /* --- SECCIÓN MARCA Y NIVEL --- */
+    .brand-section { padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
+    .app-title { font-size: 16px; font-weight: 800; color: #14532d; letter-spacing: 0.5px; }
+    .level-box { text-align: right; }
+    .level-txt { font-size: 12px; font-weight: 700; color: #15803d; margin-bottom: 2px; }
+    .level-bar { width: 80px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+    .level-fill { width: 65%; height: 100%; background: #22c55e; }
+
+    /* --- DISEÑO CENTRAL REDISTRIBUIDO --- */
+    .main-workspace { flex: 1; display: grid; grid-template-columns: 1fr; overflow-y: auto; }
+    @media (min-width: 768px) { .main-workspace { grid-template-columns: 1.2fr 1fr; overflow: hidden; } }
+
+    /* --- ÁREA AVATAR CON IMAGEN DE FONDO DINÁMICA --- */
+    .avatar-preview-area {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px;
+      min-height: 350px;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-blend-mode: multiply; 
+      transition: background-color 1s ease, background-image 0.5s ease;
+    }
+
+    .avatar-header-label { z-index: 2; text-shadow: 0 1px 4px rgba(255,255,255,0.8); }
+    .avatar-header-label h2 { font-size: 15px; font-weight: 800; color: #14532d; }
+    .avatar-header-label p { font-size: 11px; color: #166534; }
+
+    .plant-stage {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+      padding-top: 20px;
+    }
+
+    #plantVideo {
+      width: auto;
+      height: 65%;
+      max-height: 260px;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15));
+    }
+
+    /* NUEVO: Capa para los items sobre la escena del avatar */
+    .avatar-items-container {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 3;
+    }
+
+    .avatar-item-rendered {
+      font-size: 32px;
+      background: rgba(255, 255, 255, 0.75);
+      padding: 8px;
+      border-radius: 50%;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      animation: aparecer 0.3s ease-out;
+    }
+
+    @keyframes aparecer {
+      from { transform: scale(0); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .avatar-footer-tag {
+      z-index: 2;
+      align-self: center;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 6px 18px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #166534;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    /* --- PANEL DE CONFIGURACIÓN --- */
+    .customizer-panel { background: #ffffff; display: flex; flex-direction: column; border-top: 1px solid #e2e8f0; }
+    @media (min-width: 768px) { .customizer-panel { border-top: none; border-left: 1px solid #e2e8f0; overflow-y: auto; } }
+
+    .nav-tabs { display: flex; border-bottom: 1px solid #f1f5f9; background: #fafafa; }
+    .tab-btn { flex: 1; padding: 14px 0; font-size: 11px; font-weight: 700; text-transform: uppercase; border: none; background: transparent; color: #94a3b8; cursor: pointer; }
+    .tab-btn.active { color: #16a34a; border-bottom: 2px solid #16a34a; background: #ffffff; }
+
+    .tab-content { padding: 20px; display: none; flex-direction: column; gap: 16px; flex: 1; }
+    .tab-content.active { display: flex; }
+
+    .control-item-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; }
+    .control-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; font-weight: 700; color: #334155; }
+    .control-badge { background: #e2e8f0; padding: 2px 8px; border-radius: 6px; font-size: 11px; }
+
+    /* Cuadrícula de Selección de Ambiente y de Items */
+    .ambiente-grid, .items-selection-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    
+    .ambiente-card, .item-select-btn {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: #475569;
+      transition: all 0.2s;
+    }
+    .item-select-btn { background: #ffffff; width: 100%; font-size: 14px; }
+    .ambiente-card:hover, .ambiente-card.selected, .item-select-btn.selected { border-color: #16a34a; background: #f0fdf4; color: #166534; }
+    .ambiente-icon { font-size: 22px; margin-bottom: 4px; display: block; }
+
+    .mini-metrics { display: flex; flex-direction: column; gap: 8px; margin-top: auto; padding-top: 15px;}
+    .mini-card { background: #f0fdf4; border: 1px dashed #bbf7d0; border-radius: 10px; padding: 10px; font-size: 12px; color: #166534; }
+    .mini-card-title { font-size: 10px; text-transform: uppercase; color: #15803d; font-weight: 700; margin-bottom: 2px; }
+
+    .color-picker-row { padding: 12px; display: flex; gap: 8px; justify-content: center; background: #fafafa; border-top: 1px solid #f1f5f9; }
+    .color-dot { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); }
+
+    /* --- PIE DE PÁGINA --- */
+    .footer-controls { padding: 15px 20px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 12px; }
+    .btn-guardar { width: 100%; background: #16a34a; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); }
+    .btn-guardar:hover { background: #15803d; }
+
+    .bottom-nav { display: flex; justify-content: space-between; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: #94a3b8; font-size: 11px; text-decoration: none; flex: 1; }
+    .nav-item i { font-size: 20px; margin-bottom: 2px; }
+    .nav-item.active { color: #16a34a; font-weight: 600; }
+
+    .temblor { animation: temblor 0.15s infinite alternate; }
+    @keyframes temblor {
+      from { transform: translateX(-3px) rotate(-1deg); }
+      to   { transform: translateX(3px) rotate(1deg); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  
+  <header class="header-profile">
+    <div class="user-info">
+      <div class="avatar-circle"><i class="ti ti-user"></i></div>
+      <div>
+        <div class="user-name-wrapper">
+          <span class="user-name" id="lblNombreUsuario">Marisol R.</span>
+          <button class="edit-name-btn" onclick="cambiarNombreUsuario()"><i class="ti ti-pencil"></i></button>
+        </div>
+        <div class="eco-points"><i class="ti ti-leaf"></i> 1520 Eco-Points</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <i class="ti ti-settings"></i>
+      <i class="ti ti-shopping-cart"></i>
+    </div>
+  </header>
+
+  <section class="brand-section">
+    <h1 class="app-title">ECO-AVATAR</h1>
+    <div class="level-box">
+      <div class="level-txt">Nivel 4 🌿</div>
+      <div class="level-bar"><div class="level-fill"></div></div>
+    </div>
+  </section>
+
+  <main class="main-workspace">
+    
+    <div class="avatar-preview-area" id="sceneBg">
+      <div class="avatar-header-label">
+        <h2 id="lblNombreAvatar">Guardián: Terra</h2>
+        <p>Monitoreo de Ecosistema</p>
+      </div>
+
+      <div class="plant-stage">
+        <video id="plantVideo" autoplay muted loop playsinline>
+          <source id="videoSource" src="optimo.mp4" type="video/mp4">
+        </video>
+      </div>
+
+      <div class="avatar-items-container" id="itemsEnPantalla"></div>
+
+      <div class="avatar-footer-tag" id="estadoBadge">Analizando...</div>
+    </div>
+
+    <div class="customizer-panel">
+      <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="cambiarPestana(event, 'panel-ambiente')">Ambiente</button>
+        <button class="tab-btn" onclick="cambiarPestana(event, 'panel-sensores')">Sensores</button>
+        <button class="tab-btn" onclick="cambiarPestana(event, 'panel-items')">Items</button>
+      </nav>
+
+      <div id="panel-ambiente" class="tab-content active">
+        <div class="ambiente-grid">
+          <div class="ambiente-card selected" onclick="seleccionarAmbiente(this, 'bosque')">
+            <span class="ambiente-icon">🌲</span> Bosque Vivo
+          </div>
+          <div class="ambiente-card" onclick="seleccionarAmbiente(this, 'desierto')">
+            <span class="ambiente-icon">🏜️</span> Desierto Sol
+          </div>
+          <div class="ambiente-card" onclick="seleccionarAmbiente(this, 'glaciar')">
+            <span class="ambiente-icon">❄️</span> Glaciar Alfa
+          </div>
+          <div class="ambiente-card" onclick="seleccionarAmbiente(this, 'cyber')">
+            <span class="ambiente-icon">🌌</span> Eco Cyber
+          </div>
+        </div>
+        
+        <div class="mini-metrics">
+          <div class="mini-card" style="background: #fafafa; border-color: #cbd5e1; color: #475569;">
+            <div class="mini-card-title">Efecto del Entorno</div>
+            <p id="txtEfectoAmbiente">Ambiente balanceado. Proporciona estabilidad de humedad estándar.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel-sensores" class="tab-content">
+        <div class="control-item-box">
+          <div class="control-header">
+            <span>🌡️ Temperatura</span>
+            <span class="control-badge" id="tempSliderVal">22°C</span>
+          </div>
+          <input type="range" id="tempSlider" min="5" max="45" value="22">
+        </div>
+
+        <div class="control-item-box">
+          <div class="control-header">
+            <span>💧 Humedad</span>
+            <span class="control-badge" id="humSliderVal">60%</span>
+          </div>
+          <input type="range" id="humSlider" min="0" max="100" value="60">
+        </div>
+
+        <div class="mini-metrics">
+          <div class="mini-card">
+            <div class="mini-card-title">Ánimo del Guardián</div>
+            <strong id="moodText">Cargando...</strong>
+          </div>
+          <div class="mini-card" style="background: #fffdf5; border-color: #fef08a; color: #854d0e;">
+            <div class="mini-card-title">Consejo del Ecosistema</div>
+            <p id="consejoText" style="font-size: 11px; line-height: 1.3;">Cargando...</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="panel-items" class="tab-content">
+        <div class="items-selection-grid">
+          <button class="item-select-btn" onclick="toggleItem(this, '🪴')">🪴 Macetero</button>
+          <button class="item-select-btn" onclick="toggleItem(this, '🧹')">🧹 Escoba</button>
+          <button class="item-select-btn" onclick="toggleItem(this, '🐱')">🐱 Gato</button>
+          <button class="item-select-btn" onclick="toggleItem(this, '🐶')">🐶 Perro</button>
+        </div>
+      </div>
+
+      <div class="color-picker-row">
+        <div class="color-dot" style="background: #16a34a;"></div>
+        <div class="color-dot" style="background: #ea580c;"></div>
+        <div class="color-dot" style="background: #2563eb;"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="footer-controls">
+    <button class="btn-guardar" onclick="alert('¡Configuración de Ecosistema Guardada con Éxito!')">
+      GUARDAR CONFIGURACIÓN
+    </button>
+
+    <nav class="bottom-nav">
+      <a href="#" class="nav-item"><i class="ti ti-user"></i>Perfil</a>
+      <a href="#" class="nav-item"><i class="ti ti-trophy"></i>Desafíos</a>
+      <a href="#" class="nav-item active"><i class="ti ti-plant"></i>Avatar</a>
+      <a href="#" class="nav-item"><i class="ti ti-users"></i>Comunidad</a>
+    </nav>
+  </footer>
+
+</div>
+
+<script>
+// =============================================
+// ENLACES DE IMÁGENES PARA CADA BIOMA
+// =============================================
+const IMAGENES_AMBIENTE = {
+  bosque: "url('https://i.postimg.cc/P5LhTwYC/descarga-(3).jpg')", 
+  desierto: "url('https://i.postimg.cc/przvKbV8/How-to-use-the-sauna-with-dry-fasting-to-cure-Herpes-and-Ebstein-Barr.jpg')",
+  glaciar: "url('https://i.postimg.cc/7LFQ0C5R/Glacier-Aesthetic-Screensaver.jpg')",
+  cyber: "url('https://i.postimg.cc/6QnhsM3J/descarga-(4).jpg')"
+};
+let ambienteActual = "bosque";
+let itemsSeleccionados = [];
+
+// =============================================
+// LÓGICA DE INTERFAZ GENERAL
+// =============================================
+
+function cambiarNombreUsuario() {
+  const nuevoNombre = prompt("Introduce tu nuevo nombre de usuario:", document.getElementById("lblNombreUsuario").innerText);
+  if (nuevoNombre && nuevoNombre.trim() !== "") {
+    document.getElementById("lblNombreUsuario").innerText = nuevoNombre;
+    document.getElementById("lblNombreAvatar").innerText = "Guardián: " + nuevoNombre;
+  }
+}
+
+function cambiarPestana(evt, panelId) {
+  const tabcontents = document.getElementsByClassName("tab-content");
+  for (let i = 0; i < tabcontents.length; i++) { tabcontents[i].classList.remove("active"); }
+  const tabbtns = document.getElementsByClassName("tab-btn");
+  for (let i = 0; i < tabbtns.length; i++) { tabbtns[i].classList.remove("active"); }
+  document.getElementById(panelId).classList.add("active");
+  evt.currentTarget.classList.add("active");
+}
+
+function seleccionarAmbiente(elemento, tipoAmbiente) {
+  const cards = document.getElementsByClassName("ambiente-card");
+  for(let i=0; i<cards.length; i++) { cards[i].classList.remove("selected"); }
+  elemento.classList.add("selected");
+
+  ambienteActual = tipoAmbiente;
+  const txtEfecto = document.getElementById("txtEfectoAmbiente");
+  
+  if(tipoAmbiente === 'bosque') {
+    txtEfecto.innerText = "Ambiente balanceado. Proporciona estabilidad de humedad estándar.";
+  } else if(tipoAmbiente === 'desierto') {
+    txtEfecto.innerText = "Reduce drásticamente la retención de agua. Cuidado con la deshidratación.";
+  } else if(tipoAmbiente === 'glaciar') {
+    txtEfecto.innerText = "Entorno gélido. La temperatura tenderá a bajar de forma crítica.";
+  } else if(tipoAmbiente === 'cyber') {
+    txtEfecto.innerText = "Ecosistema artificial de laboratorio. Incrementa los puntos de experiencia.";
+  }
+
+  actualizarUI();
+}
+
+// NUEVO: Función toggleItem encargada de pintar y remover los emojis al lado del avatar
+function toggleItem(boton, emoji) {
+  boton.classList.toggle("selected");
+  
+  if (itemsSeleccionados.includes(emoji)) {
+    itemsSeleccionados = itemsSeleccionados.filter(item => item !== emoji);
+  } else {
+    itemsSeleccionados.push(emoji);
+  }
+  
+  const contenedor = document.getElementById("itemsEnPantalla");
+  contenedor.innerHTML = ""; 
+  
+  itemsSeleccionados.forEach(item => {
+    const span = document.createElement("span");
+    span.className = "avatar-item-rendered";
+    span.innerText = item;
+    contenedor.appendChild(span);
+  });
+}
+
+// =============================================
+// LÓGICA DE SENSORES Y VIDEOS REACTIVOS
+// =============================================
+const ESTADOS = {
+  perfecto: {
+    nombre: "¡Feliz y radiante! 😊", badge: "Óptimo", video: "happis.webm", 
+    consejo: "Todo está perfecto. Tu planta está creciendo de maravilla.", icon: "🌱",
+    colorFiltro: "rgba(220, 252, 231, 0.4)"
+  },
+  calor: {
+    nombre: "¡Hace mucho calor! 🥵", badge: "Calor Crítico", video: "caliente.webm",
+    consejo: "Necesito ventilación o un lugar más fresco pronto.", icon: "🔥",
+    colorFiltro: "rgba(254, 215, 170, 0.5)"
+  },
+  frio: {
+    nombre: "¡Me estoy congelando! 🥶", badge: "Frío Extremo", video: "hice.webm",
+    consejo: "Hace demasiado frío. ¿Podrías subir la temperatura?", icon: "❄️",
+    colorFiltro: "rgba(191, 219, 254, 0.5)"
+  },
+  seco: {
+    nombre: "¡Tengo mucha sed! 😩", badge: "Suelo Seco", video: "se.webm",
+    consejo: "La humedad es muy baja. Un poco de agua me vendría bien.", icon: "🏜️",
+    colorFiltro: "rgba(254, 240, 138, 0.5)"
+  },
+  humedo: {
+    nombre: "¡Demasiada agua! 🌊", badge: "Exceso Humedad", video: "mojado.webm", 
+    consejo: "Hay demasiada humedad en el aire. Podrían salir hongos.", icon: "🤿",
+    colorFiltro: "rgba(186, 230, 253, 0.5)"
+  },
+  stress: {
+    nombre: "¡Estado Crítico! 😵", badge: "Peligro", video: "sad.webm",
+    consejo: "¡Condiciones extremas! Por favor, revisa el invernadero.", icon: "🚨",
+    colorFiltro: "rgba(254, 202, 202, 0.6)"
+  }
+};
+
+function actualizarUI() {
+  const temp = parseInt(document.getElementById("tempSlider").value);
+  const hum = parseInt(document.getElementById("humSlider").value);
+
+  document.getElementById("tempSliderVal").innerText = temp + "°C";
+  document.getElementById("humSliderVal").innerText = hum + "%";
+
+  let estadoKey = "perfecto";
+  if (temp > 38 || temp < 8 || hum < 15) estadoKey = "stress";
+  else if (temp > 32) estadoKey = "calor";
+  else if (temp < 12) estadoKey = "frio";
+  else if (hum < 30) estadoKey = "seco";
+  else if (hum > 80) estadoKey = "humedo"; 
+
+  const info = ESTADOS[estadoKey];
+
+  const contenedorAvatar = document.getElementById("sceneBg");
+  contenedorAvatar.style.backgroundImage = IMAGENES_AMBIENTE[ambienteActual];
+  contenedorAvatar.style.backgroundColor = info.colorFiltro;
+
+  document.getElementById("moodText").innerText = info.nombre;
+  document.getElementById("estadoBadge").innerText = info.icon + " " + info.badge;
+  document.getElementById("consejoText").innerText = info.consejo;
+  
+  const video = document.getElementById("plantVideo");
+  const source = document.getElementById("videoSource");
+
+  if (estadoKey === "stress") {
+    video.classList.add("temblor");
+  } else {
+    video.classList.remove("temblor");
+  }
+
+  if (!source.src.includes(info.video)) {
+    source.src = info.video;
+    video.load(); 
+    video.play().catch(e => console.log("Esperando interacción")); 
+  }
+}
+
+document.getElementById("tempSlider").addEventListener("input", actualizarUI);
+document.getElementById("humSlider").addEventListener("input", actualizarUI);
+
+actualizarUI();
+</script>
+
+</body>
+</html>

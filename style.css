@@ -1,0 +1,139 @@
+/* --- ESTILOS GENERALES --- */
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1a2e; /* Fondo oscuro exterior */
+}
+
+/* --- CONTENEDOR PRINCIPAL --- */
+#app {
+    width: 400px;
+    min-height: 720px;
+    border-radius: 30px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    background: #166534; /* Color base verde */
+    transition: background 1.5s ease;
+}
+
+.scene-bg {
+    position: absolute; 
+    inset: 0;
+    transition: background 1.5s ease;
+    z-index: 0;
+}
+
+.content {
+    position: relative; 
+    z-index: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+/* --- SECCIÓN DE LA IMAGEN --- */
+.plant-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+}
+
+#plantImage {
+    width: 230px;
+    height: auto;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.4));
+    transition: transform 0.3s ease, filter 0.5s ease;
+}
+
+.mood-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    margin-top: 15px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    text-align: center;
+}
+
+/* --- TARJETAS DE MÉTRICAS --- */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.metric-card {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 16px;
+    padding: 15px;
+    color: white;
+}
+
+.metric-value {
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.metric-bar {
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.metric-fill {
+    height: 100%;
+    transition: width 0.8s ease, background 0.5s;
+}
+#plantVideo {
+  width: 280px; /* Un poco más grande para mejor visibilidad */
+  height: auto;
+  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+  transition: transform 0.3s ease;
+  border-radius: 20px; /* Opcional: si el video tiene fondo cuadrado */
+}
+/* Contenedor de items junto al avatar */
+.avatar-items-container {
+  position: absolute;
+  top: 100px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 5;
+}
+
+.active-item {
+  font-size: 30px;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 8px;
+  border-radius: 50%;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.item-select-btn {
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  background: #f8fafc;
+  width: 100%;
+  text-align: left;
+}
